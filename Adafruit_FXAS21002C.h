@@ -107,7 +107,7 @@ class Adafruit_FXAS21002C : public Adafruit_Sensor
   public:
     Adafruit_FXAS21002C(int32_t sensorID = -1);
 
-    bool begin           ( gyroRange_t rng = GYRO_RANGE_250DPS );
+    bool begin           ( gyroRange_t rng = GYRO_RANGE_500DPS, TwoWire &wirePort = Wire );
     bool getEvent        ( sensors_event_t* event);
     void getSensor       ( sensor_t* sensor);
 
@@ -115,6 +115,7 @@ class Adafruit_FXAS21002C : public Adafruit_Sensor
     gyroRawData_t raw;
 
   private:
+    TwoWire *_i2cPort;               //This stores the requested i2c port
     void        write8  ( byte reg, byte value );
     byte        read8   ( byte reg );
     gyroRange_t _range;

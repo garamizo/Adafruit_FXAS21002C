@@ -55,15 +55,15 @@
 /**************************************************************************/
 void Adafruit_FXAS21002C::write8(byte reg, byte value)
 {
-  Wire.beginTransmission(FXAS21002C_ADDRESS);
+  _i2cPort->beginTransmission(FXAS21002C_ADDRESS);
   #if ARDUINO >= 100
-    Wire.write((uint8_t)reg);
-    Wire.write((uint8_t)value);
+    _i2cPort->write((uint8_t)reg);
+    _i2cPort->write((uint8_t)value);
   #else
-    Wire.send(reg);
-    Wire.send(value);
+    _i2cPort->send(reg);
+    _i2cPort->send(value);
   #endif
-  Wire.endTransmission();
+  _i2cPort->endTransmission();
 }
 
 /**************************************************************************/
@@ -77,18 +77,18 @@ byte Adafruit_FXAS21002C::read8(byte reg)
 {
   byte value;
 
-  Wire.beginTransmission((byte)FXAS21002C_ADDRESS);
+  _i2cPort->beginTransmission((byte)FXAS21002C_ADDRESS);
   #if ARDUINO >= 100
-    Wire.write((uint8_t)reg);
+    _i2cPort->write((uint8_t)reg);
   #else
-    Wire.send(reg);
+    _i2cPort->send(reg);
   #endif
-  if (Wire.endTransmission(false) != 0) return 0;
-  Wire.requestFrom((byte)FXAS21002C_ADDRESS, (byte)1);
+  if (_i2cPort->endTransmission(false) != 0) return 0;
+  _i2cPort->requestFrom((byte)FXAS21002C_ADDRESS, (byte)1);
   #if ARDUINO >= 100
-    value = Wire.read();
+    value = _i2cPort->read();
   #else
-    value = Wire.receive();
+    value = _i2cPort->receive();
   #endif
 
   return value;
@@ -124,10 +124,10 @@ Adafruit_FXAS21002C::Adafruit_FXAS21002C(int32_t sensorID) {
     @return True if the device was successfully initialized, otherwise false.
 */
 /**************************************************************************/
-bool Adafruit_FXAS21002C::begin(gyroRange_t rng)
+bool Adafruit_FXAS21002C::begin(gyroRange_t rng, TwoWire &wirePort)
 {
   /* Enable I2C */
-  Wire.begin();
+  _i2cPort = &wirePort;
 
   /* Set the range the an appropriate value */
   _range = rng;
@@ -237,31 +237,31 @@ bool Adafruit_FXAS21002C::getEvent(sensors_event_t* event)
   event->timestamp = millis();
 
   /* Read 7 bytes from the sensor */
-  Wire.beginTransmission((byte)FXAS21002C_ADDRESS);
+  _i2cPort->beginTransmission((byte)FXAS21002C_ADDRESS);
   #if ARDUINO >= 100
-    Wire.write(GYRO_REGISTER_STATUS | 0x80);
+    _i2cPort->write(GYRO_REGISTER_STATUS | 0x80);
   #else
-    Wire.send(GYRO_REGISTER_STATUS | 0x80);
+    _i2cPort->send(GYRO_REGISTER_STATUS | 0x80);
   #endif
-  Wire.endTransmission();
-  Wire.requestFrom((byte)FXAS21002C_ADDRESS, (byte)7);
+  _i2cPort->endTransmission();
+  _i2cPort->requestFrom((byte)FXAS21002C_ADDRESS, (byte)7);
 
   #if ARDUINO >= 100
-    uint8_t status = Wire.read();
-    uint8_t xhi = Wire.read();
-    uint8_t xlo = Wire.read();
-    uint8_t yhi = Wire.read();
-    uint8_t ylo = Wire.read();
-    uint8_t zhi = Wire.read();
-    uint8_t zlo = Wire.read();
+    uint8_t status = _i2cPort->read();
+    uint8_t xhi = _i2cPort->read();
+    uint8_t xlo = _i2cPort->read();
+    uint8_t yhi = _i2cPort->read();
+    uint8_t ylo = _i2cPort->read();
+    uint8_t zhi = _i2cPort->read();
+    uint8_t zlo = _i2cPort->read();
   #else
-    uint8_t status = Wire.receive();
-    uint8_t xhi = Wire.receive();
-    uint8_t xlo = Wire.receive();
-    uint8_t yhi = Wire.receive();
-    uint8_t ylo = Wire.receive();
-    uint8_t zhi = Wire.receive();
-    uint8_t zlo = Wire.receive();
+    uint8_t status = _i2cPort->receive();
+    uint8_t xhi = _i2cPort->receive();
+    uint8_t xlo = _i2cPort->receive();
+    uint8_t yhi = _i2cPort->receive();
+    uint8_t ylo = _i2cPort->receive();
+    uint8_t zhi = _i2cPort->receive();
+    uint8_t zlo = _i2cPort->receive();
   #endif
 
   /* Shift values to create properly formed integer */
